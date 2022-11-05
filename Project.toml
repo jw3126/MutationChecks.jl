@@ -3,6 +3,9 @@ uuid = "28e448c6-aefe-4fa0-855b-08706fcc0c50"
 authors = ["Jan Weidner <jw3126@gmail.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+ExprTools = "e2ba6199-217a-4e67-a87a-7c52f15ade04"
+
 [compat]
 julia = "1"
 
