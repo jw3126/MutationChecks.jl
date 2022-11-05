@@ -92,7 +92,7 @@ function _showerror(io, err::Union{CmpSelfCheckFail, MutCheckFail})
         println(io, "Mutation detected.")
     end
     res = err.result
-    if res.f_differs
+    msg_calle = if res.f_differs
         "Mutated."
     else
         "Not mutated."
