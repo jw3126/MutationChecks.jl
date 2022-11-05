@@ -44,7 +44,7 @@ end
 
 function mutcheckmacro(code)
     if Meta.isexpr(code, :do)
-        error("do blocks are currently not supported. Got $code")
+        error("do blocks are currently not supported. Consider making a PR! Got $code")
     end
     if !Meta.isexpr(code, :call)
         error("Expected a function call, got $code instead.")
@@ -97,7 +97,7 @@ function _showerror(io, err::Union{CmpSelfCheckFail, MutCheckFail})
     else
         "Mutated positions are $(res.differ_args)"
     end
-    msg_kw = if isempty(res.differ_args)
+    msg_kw = if isempty(res.differ_kw)
         "None were mutated."
     else
         "Mutated keywords are $(res.differ_kw)"
