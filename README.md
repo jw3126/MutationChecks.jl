@@ -27,7 +27,7 @@ mycalc([1,2],[3,4])
 ```
 ERROR: Mutation detected.
 * Expression:           mysub(d, c)
-* Calle mutated:        false
-* Positional arguments: Mutated positions are [1]
+* Calle:                Not mutated.
+* Positional arguments: Mutated positions are [1].
 * Keyword arguments:    None were mutated.
 ```

@@ -1,4 +1,5 @@
 module MutationChecks
+export @mutcheck
 
 struct Call{F,Args,KW <: NamedTuple}
     f::F
@@ -85,27 +86,50 @@ struct MutCheckFail <: Exception
     expr
 end
 function _showerror(io, err::Union{CmpSelfCheckFail, MutCheckFail})
-    if err isa CmpSelfCheckFail
+    isselfcheck = err isa CmpSelfCheckFail
+    ismutcheck = err isa MutCheckFail
+    if isselfcheck
         println(io, "Self comparison failed.")
     else
-        @assert err isa MutCheckFail
+        @assert ismutcheck
         println(io, "Mutation detected.")
     end
     res = err.result
-    msg_calle = if res.f_differs
+    pass_calle = !(res.f_differs)
+    msg_calle = if !pass_calle && isselfcheck
+        "Not self equal."
+    elseif !pass_calle &&  ismutcheck
         "Mutated."
-    else
+    elseif  pass_calle && isselfcheck
+        "Self equal."
+    elseif pass_calle && ismutcheck
         "Not mutated."
-    end
-    msg_pos = if isempty(res.differ_args)
-        "None were mutated."
     else
+        error()
+    end
+    pass_pos = isempty(res.differ_args)
+    msg_pos = if pass_pos && ismutcheck
+        "None were mutated."
+    elseif pass_pos && isselfcheck
+        "All self equal."
+    elseif (!pass_pos) && ismutcheck
         "Mutated positions are $(res.differ_args)."
-    end
-    msg_kw = if isempty(res.differ_kw)
-        "None were mutated."
+    elseif (!pass_pos) && isselfcheck
+        "Self unequal positions are $(res.differ_args)."
     else
+        error()
+    end
+    pass_kw = isempty(res.differ_kw)
+    msg_kw = if pass_kw && ismutcheck
+        "None were mutated."
+    elseif pass_kw && isselfcheck
+        "All self equal."
+    elseif (!pass_kw) && ismutcheck
         "Mutated keywords are $(res.differ_kw)."
+    elseif (!pass_kw) && isselfcheck
+        "Self unequal keywords are $(res.differ_kw)"
+    else
+        error()
     end
     msg = """
     * Expression:           $(err.expr)

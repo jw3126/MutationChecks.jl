@@ -45,4 +45,6 @@ end
 
     @test_throws CmpSelfCheckFail @mutcheck pass(MutContainer(1), ret=1)
     @test_throws CmpSelfCheckFail @mutcheck pass(MutContainer(MutContainer(1)), ret=1)
+
+    @test @mutcheck NaN === pass(ret=NaN)
 end
