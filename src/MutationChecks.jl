@@ -92,19 +92,24 @@ function _showerror(io, err::Union{CmpSelfCheckFail, MutCheckFail})
         println(io, "Mutation detected.")
     end
     res = err.result
+    if res.f_differs
+        "Mutated."
+    else
+        "Not mutated."
+    end
     msg_pos = if isempty(res.differ_args)
         "None were mutated."
     else
-        "Mutated positions are $(res.differ_args)"
+        "Mutated positions are $(res.differ_args)."
     end
     msg_kw = if isempty(res.differ_kw)
         "None were mutated."
     else
-        "Mutated keywords are $(res.differ_kw)"
+        "Mutated keywords are $(res.differ_kw)."
     end
     msg = """
     * Expression:           $(err.expr)
-    * Calle mutated:        $(res.f_differs)
+    * Calle:                $(msg_calle)
     * Positional arguments: $(msg_pos)
     * Keyword arguments:    $(msg_kw)
     """
