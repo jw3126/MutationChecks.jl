@@ -31,10 +31,21 @@ end
 
     copykw!(;src, dst) = copy!(dst, src)
     @test_throws MutCheckFail @mutcheck copykw!(src=[1], dst=[2])
+    @test_throws MutCheckFail @mutcheck copykw!(src=[1], dst=[2]) (ignore=[:src],)
+    @mutcheck copykw!(src=[1], dst=[2]) (ignore=[:dst],)
+    @mutcheck copykw!(src=[1], dst=[2]) (ignore=[:dst, :src],)
+    @mutcheck copykw!(src=[1], dst=[2]) (skip=true,)
+    @mutcheck copykw!(src=[1], dst=[2]) (skip=true, ignore=[:dst])
 
-    x = [1]
-    y = [2]
+    x = [1];y = [2]
     @test_throws MutCheckFail @mutcheck copy!(x,y)
+    x = [1];y = [2]
+    @test_throws MutCheckFail @mutcheck copy!(x,y) (ignore=[2],)
+    x = [1];y = [2]
+    @mutcheck copy!(x,y) (ignore=[1],)
+    x = [1];y = [2]
+    @mutcheck copy!(x,y) (skip=true,)
+    x = [1];y = [2]
     @test_throws MutCheckFail @mutcheck apply(empty!, [1])
 
     @test Ev([1]) == deepcopy(Ev([1]))

@@ -17,7 +17,13 @@ end
 Base.@kwdef struct Options
     cmp = isequal
     copy = deepcopy
+    ignore::Vector = Union{Int,Symbol}[]
+    skip::Bool = false
 end
+
+resolve_options(::Nothing) = Options()
+resolve_options(opt::Options) = opt
+resolve_options(kw::NamedTuple) = Options(;kw...)
 
 
 function execute(c::Call)
@@ -25,6 +31,10 @@ function execute(c::Call)
 end
 
 function trymutcheck(call::Call, options::Options, expr)
+    if options.skip
+        return (execute(call), nothing)
+    end
+    # TODO don't copy ignored args
     call_backup = options.copy(call)::typeof(call)
     out = execute(call)
     res = MutationResults(call, call_backup, options)
@@ -39,11 +49,11 @@ function trymutcheck(call::Call, options::Options, expr)
     end
 end
 
-macro mutcheck(code)
-    mutcheckmacro(code)
+macro mutcheck(code, options=nothing)
+    mutcheckmacro(code, options)
 end
 
-function mutcheckmacro(code)
+function mutcheckmacro(code, options=nothing)
     if Meta.isexpr(code, :do)
         error("do blocks are currently not supported. Consider making a PR! Got $code")
     end
@@ -55,9 +65,9 @@ function mutcheckmacro(code)
     else
         Expr(:call, make_call, code.args...)
     end
-    options = Options()
     quote
-        out, err = $trymutcheck($(esc(call)), $options, $(QuoteNode(code)))
+        options::$Options = $resolve_options($(esc(options)))
+        out, err = $trymutcheck($(esc(call)), options, $(QuoteNode(code)))
         if err isa Exception
             throw(err)
         else
@@ -80,11 +90,11 @@ struct CmpSelfCheckFail <: Exception
     expr
 end
 
-
 struct MutCheckFail <: Exception
     result::MutationResults
     expr
 end
+
 function _showerror(io, err::Union{CmpSelfCheckFail, MutCheckFail})
     isselfcheck = err isa CmpSelfCheckFail
     ismutcheck = err isa MutCheckFail
@@ -149,11 +159,13 @@ end
 function MutationResults(call1::Call, call2::Call, options::Options)
     f_differs = !options.cmp(call1.f, call2.f)::Bool
     differ_args = filter(eachindex(call1.args, call2.args)) do i
+        i in options.ignore && return false
         arg1 = call1.args[i]
         arg2 = call2.args[i]
         !options.cmp(arg1, arg2)::Bool
     end
     differ_kw = filter(collect(propertynames(call1.kw))) do s
+        s in options.ignore && return false
         kw1 = call1.kw[s]
         kw2 = call2.kw[s]
         !options.cmp(kw1, kw2)::Bool
