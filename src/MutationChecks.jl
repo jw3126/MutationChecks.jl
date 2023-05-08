@@ -1,5 +1,6 @@
 module MutationChecks
 export @mutcheck
+import WhyNotEqual as WN
 
 struct Call{F,Args,KW <: NamedTuple}
     f::F
@@ -148,10 +149,12 @@ function _showerror(io, err::Union{CmpSelfCheckFail, MutCheckFail})
     * Positional arguments: $(msg_pos)
     * Keyword arguments:    $(msg_kw)
     """
-    if err.options.whynot
-        cmp = err.options.cmp
-        msg_whynot = sprint(WhyNotEqual.whynot(cmp, err.result.call1, err.result.call2))
+    options = err.result.options
+    if options.whynot
+        cmp = options.cmp
+        msg_whynot = sprint(show, WN.whynot(cmp, err.result.call1, err.result.call2))
         msg = """$msg
+        # Description of the mutation
         $msg_whynot
         """
     end

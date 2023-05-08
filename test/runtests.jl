@@ -46,7 +46,8 @@ end
     x = [1];y = [2]
     @mutcheck copy!(x,y) (skip=true,)
     x = [1];y = [2]
-    @test_throws MutCheckFail @mutcheck apply(empty!, [1])
+    outcome = @test_throws MutCheckFail @mutcheck apply(empty!, [1])
+    err = outcome.value
 
     @test Ev([1]) == deepcopy(Ev([1]))
     @test_throws MutCheckFail @mutcheck Ev([1])(empty!)
