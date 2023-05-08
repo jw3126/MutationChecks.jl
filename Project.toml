@@ -3,6 +3,9 @@ uuid = "28e448c6-aefe-4fa0-855b-08706fcc0c50"
 authors = ["Jan Weidner <jw3126@gmail.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+WhyNotEqual = "e6125b7d-2298-432f-af45-a1235af9403e"
+
 [compat]
 julia = "1.6"
 

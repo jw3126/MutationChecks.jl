@@ -19,6 +19,7 @@ Base.@kwdef struct Options
     copy = deepcopy
     ignore::Vector = Union{Int,Symbol}[]
     skip::Bool = false
+    whynot::Bool = true
 end
 
 resolve_options(::Nothing) = Options()
@@ -147,6 +148,13 @@ function _showerror(io, err::Union{CmpSelfCheckFail, MutCheckFail})
     * Positional arguments: $(msg_pos)
     * Keyword arguments:    $(msg_kw)
     """
+    if err.options.whynot
+        cmp = err.options.cmp
+        msg_whynot = sprint(WhyNotEqual.whynot(cmp, err.result.call1, err.result.call2))
+        msg = """$msg
+        $msg_whynot
+        """
+    end
     println(io, msg)
 end
 Base.showerror(io::IO, err::CmpSelfCheckFail) = _showerror(io, err)
